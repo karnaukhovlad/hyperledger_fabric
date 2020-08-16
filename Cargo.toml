@@ -1,0 +1,29 @@
+[package]
+name = "test_siblink"
+version = "0.1.0"
+authors = ["Vladislav Karnaukhov <karnaukhov.vl@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-rt = "=1.1.1"
+actix-web = { version = "=2.0.0" }
+actix-cors = "0.2.0"
+actix = "*"
+serde = { version = "1.0.114", features = ["derive"] }
+lazy_static = "*"
+tera = "*"
+env_logger = "*"
+dotenv = "0.15.0"
+tokio = { version = "0.2.22", features = ["process", "io-util", ] }
+serde_json = "*"
+tokio-test ="*"
+futures = "0.3.1"
+derive_more = "0.99.9"
+failure = "*"
+log = "0.4.11"
+
+[dev-dependencies]
+tokio-test ="*"
+tokio = { version = "0.2.22", features = ["rt-threaded", "macros"] }
