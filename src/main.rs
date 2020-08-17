@@ -13,9 +13,10 @@ use crate::actor::CliActor;
 use crate::config::CONFIG;
 use crate::handlers::*;
 use actix_cors::Cors;
-use actix_web::{middleware, web, App, HttpServer};
+use actix_web::{guard, middleware, web, App, HttpServer};
 use env_logger;
 use std::env;
+use tera::Tera;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -27,23 +28,23 @@ async fn main() -> std::io::Result<()> {
             CONFIG.channel.clone(),
             CONFIG.chaincode.clone(),
         );
+        let tera_path = concat!(env!("CARGO_MANIFEST_DIR"), "/src/templates/**/*");
+        dbg!(tera_path);
+        let tera = Tera::new(tera_path).unwrap();
         App::new()
             .data(actor)
+            .data(tera)
             .wrap(Cors::new().allowed_origin("*").send_wildcard().finish())
             .wrap(middleware::Logger::default())
             .service(web::resource("/{asset_id}").route(web::get().to(get_asset)))
             .service(web::resource("/").route(web::get().to(all_assets)))
-        // .default_service(
-        //     // 404 for GET request
-        //     web::resource("")
-        //         .route(web::get().to(p404))
-        //         // all requests that are not `GET`
-        //         .route(
-        //             web::route()
-        //                 .guard(guard::Not(guard::Get()))
-        //                 .to(HttpResponse::MethodNotAllowed),
-        //         ),
-        // )
+            .default_service(
+                // 404 for GET request
+                web::resource("")
+                    .route(web::get().to(p404))
+                    // all requests that are not `GET`
+                    .route(web::route().guard(guard::Not(guard::Get())).to(p404)),
+            )
     })
     .bind(CONFIG.binding_address.clone())?
     .run();

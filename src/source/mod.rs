@@ -1,5 +1,6 @@
 pub mod cli;
 use serde::{Deserialize, Serialize};
+use std::convert::From;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Asset {
@@ -23,4 +24,10 @@ pub struct AssetsList {
     key: String,
     #[serde(rename = "Record")]
     record: Asset,
+}
+
+impl From<AssetsList> for Asset {
+    fn from(old: AssetsList) -> Self {
+        old.record
+    }
 }

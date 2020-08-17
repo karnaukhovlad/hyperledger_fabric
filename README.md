@@ -23,5 +23,5 @@ export CORE_PEER_TLS_ROOTCERT_FILE="${HOME}/test_fabric/fabric-samples/test-netw
 3. cargo install
 4. cargo run
 
-Для того, что бы получить все ассеты нужен get 0.0.0.0:8384/
+Для того, что бы получить все ассеты необходимо сделать get запрос 0.0.0.0:8384/
 Для того, что бы получить конкретный ассет get 0.0.0.0:8384/{asset_id}. Пример: 0.0.0.0:8384/asset1

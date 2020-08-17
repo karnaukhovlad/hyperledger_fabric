@@ -1,14 +1,8 @@
-use std::collections::BTreeMap;
-
+use crate::source::{cli::CliHandler, Asset};
 use actix::prelude::*;
-// use failure::Error;
-use futures::{FutureExt, TryFutureExt};
-
-use crate::source::cli::Command;
-use crate::source::{cli::CliHandler, Asset, AssetsList};
-use std::ffi::{OsStr, OsString};
-use std::ops::Deref;
-use std::path::Path;
+use futures::FutureExt;
+use std::collections::BTreeMap;
+use std::ffi::OsString;
 
 pub struct CliActor {
     cache: BTreeMap<String, Asset>,
@@ -20,7 +14,7 @@ pub struct CliActor {
 pub struct GetAll();
 
 impl Message for GetAll {
-    type Result = Result<Vec<AssetsList>, Error>;
+    type Result = Result<Vec<Asset>, Error>;
 }
 
 pub struct AssetId(pub String);
@@ -59,9 +53,9 @@ impl Supervised for CliActor {
 }
 
 impl Handler<GetAll> for CliActor {
-    type Result = ResponseFuture<Result<Vec<AssetsList>, Error>>;
+    type Result = ResponseFuture<Result<Vec<Asset>, Error>>;
 
-    fn handle(&mut self, msg: GetAll, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, _: GetAll, _: &mut Self::Context) -> Self::Result {
         let mut cli_handler = CliHandler::init(
             self.path.clone(),
             self.channel.clone(),

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Chaincode asset</title>
+</head>
+<body>
+<h1>Chaincode assets</h1>
+<table>
+    {% if not_empty %}
+        <tr><td>{{ asset.ID }}</td><td>{{ asset.Color }}</td><td>{{ asset.Size}}</td><td>{{ asset.Owner }}</td><td>{{ asset.AppraisedValue }}</td><td>{{ asset.docType }}</td></tr>
+    {% else %}
+        <h2>Asset not found</h2>
+    {% endif %}
+</table>
+</body>
+</html>

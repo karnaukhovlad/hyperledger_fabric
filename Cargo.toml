@@ -18,10 +18,8 @@ env_logger = "*"
 dotenv = "0.15.0"
 tokio = { version = "0.2.22", features = ["process", "io-util", ] }
 serde_json = "*"
-tokio-test ="*"
-futures = "0.3.1"
-derive_more = "0.99.9"
-failure = "*"
+futures = "*"
+derive_more = "*"
 log = "0.4.11"
 
 [dev-dependencies]

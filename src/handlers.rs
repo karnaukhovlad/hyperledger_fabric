@@ -1,29 +1,66 @@
 use crate::actor::{AssetId, CliActor, GetAll};
-use crate::source::cli::CliHandler;
 use actix::Addr;
+use actix_web::{error, Error, Result};
 use actix_web::{web, HttpRequest, HttpResponse};
 
-// /// 404 handler
-// pub async fn p404() -> Result<fs::NamedFile> {
-//     Ok(fs::NamedFile::open("static/404.html")?.set_status_code(StatusCode::NOT_FOUND))
-// }
-
-pub async fn get_asset(
-    req: HttpRequest,
-    cli: web::Data<Addr<CliActor>>,
-    path: web::Path<(String,)>,
-) -> HttpResponse {
-    let val = cli.send(AssetId(path.0.clone())).await.unwrap();
-    match val {
-        Ok(asset) => HttpResponse::Ok().json(asset),
-        Err(_) => HttpResponse::NotFound().body(format!("Asset with id {} not found.", path.0)),
-    }
+/// 404 handler
+pub async fn p404(tmpl: web::Data<tera::Tera>) -> Result<HttpResponse, Error> {
+    let html = tmpl
+        .render("404.html", &tera::Context::new())
+        .map_err(|_| error::ErrorInternalServerError("Template error"))?;
+    Ok(HttpResponse::NotFound()
+        .content_type("text/html")
+        .body(html))
 }
 
-pub async fn all_assets(req: HttpRequest, cli: web::Data<Addr<CliActor>>) -> HttpResponse {
+pub async fn get_asset(
+    _: HttpRequest,
+    cli: web::Data<Addr<CliActor>>,
+    path: web::Path<(String,)>,
+    tmpl: web::Data<tera::Tera>,
+) -> Result<HttpResponse, Error> {
+    let val = cli.send(AssetId(path.0.clone())).await.unwrap();
+    let context = match val {
+        Ok(asset) => {
+            let mut ctx = tera::Context::new();
+            ctx.insert("asset", &asset);
+            ctx.insert("not_empty", &true);
+            ctx
+        }
+        Err(_) => {
+            let mut ctx = tera::Context::new();
+            ctx.insert("not_empty", &false);
+            ctx
+        }
+    };
+    let html = tmpl
+        .render("asset.html", &context)
+        .map_err(|_| error::ErrorInternalServerError("Template error"))?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(html))
+}
+
+pub async fn all_assets(
+    _: HttpRequest,
+    cli: web::Data<Addr<CliActor>>,
+    tmpl: web::Data<tera::Tera>,
+) -> Result<HttpResponse, Error> {
     let val = cli.send(GetAll()).await.unwrap();
-    match val {
-        Ok(asset) => HttpResponse::Ok().json(asset),
-        Err(_) => HttpResponse::NotFound().json(format!("No assets.")),
-    }
+
+    let context = match val {
+        Ok(asset) => {
+            let mut ctx = tera::Context::new();
+            ctx.insert("table", &asset);
+            ctx.insert("not_empty", &true);
+            ctx
+        }
+        Err(_) => {
+            let mut ctx = tera::Context::new();
+            ctx.insert("not_empty", &false);
+            ctx
+        }
+    };
+    let html = tmpl
+        .render("assets.html", &context)
+        .map_err(|_| error::ErrorInternalServerError("Template error"))?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(html))
 }

@@ -1,9 +1,10 @@
 use crate::source::{Asset, AssetsList};
 use serde::{Deserialize, Serialize};
 use serde_json;
-use std::ffi::{OsStr, OsString};
+use std::convert::From;
+use std::ffi::OsString;
 use std::future::Future;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::Output;
 use std::{env, io};
 use tokio::process::Command as TokioCommand;
@@ -67,7 +68,7 @@ impl CliHandler {
         Some(serde_json::from_slice(&stdout).unwrap())
     }
 
-    pub async fn get_all(&mut self) -> Option<Vec<AssetsList>> {
+    pub async fn get_all(&mut self) -> Option<Vec<Asset>> {
         let command = Command {
             args: vec!["GetAllAssets".to_string()],
         };
@@ -76,7 +77,12 @@ impl CliHandler {
         if stdout.is_empty() {
             return None;
         };
-        Some(serde_json::from_slice(&stdout).unwrap())
+        let assets: Vec<AssetsList> = serde_json::from_slice(&stdout).unwrap();
+        let right_assets: Vec<Asset> = assets
+            .into_iter()
+            .map(|assets_list| assets_list.into())
+            .collect();
+        Some(right_assets)
     }
 }
 
@@ -101,14 +107,14 @@ mod test {
     async fn check_command_execution() {
         dotenv().ok();
         let mut exec = CliHandler::init(
-            &"/home/vlad/test_fabric/fabric-samples/bin".to_string(),
-            &"mychannel".to_string(),
-            &"basic".to_string(),
+            "/home/vlad/test_fabric/fabric-samples/bin".into(),
+            "mychannel".into(),
+            "basic".into(),
         );
         let command = Command {
             args: vec!["ReadAsset".to_string(), "asset1".to_string()],
         };
-        let output = exec.execute(&command).await.unwrap();
+        let output = exec.execute(command).await.unwrap();
         assert!(output.status.success());
         let stdout = output.stdout;
         let val = str::from_utf8(&stdout).unwrap();
@@ -121,14 +127,14 @@ mod test {
     async fn check_command_execution_on_struct() {
         dotenv().ok();
         let mut exec = CliHandler::init(
-            &"/home/vlad/test_fabric/fabric-samples/bin".to_string(),
-            &"mychannel".to_string(),
-            &"basic".to_string(),
+            "/home/vlad/test_fabric/fabric-samples/bin".into(),
+            "mychannel".into(),
+            "basic".into(),
         );
         let command = Command {
             args: vec!["ReadAsset".to_string(), "asset1".to_string()],
         };
-        let output = exec.execute(&command).await.unwrap();
+        let output = exec.execute(command).await.unwrap();
         assert!(output.status.success());
         let stdout = output.stdout;
         let asset: Asset = serde_json::from_slice(&stdout).unwrap();
@@ -138,14 +144,14 @@ mod test {
     async fn check_value_not_find() {
         dotenv().ok();
         let mut exec = CliHandler::init(
-            &"/home/vlad/test_fabric/fabric-samples/bin".to_string(),
-            &"mychannel".to_string(),
-            &"basic".to_string(),
+            "/home/vlad/test_fabric/fabric-samples/bin".into(),
+            "mychannel".into(),
+            "basic".into(),
         );
         let command = Command {
             args: vec!["ReadAsset".to_string(), "asset15".to_string()],
         };
-        let output = exec.execute(&command).await.unwrap();
+        let output = exec.execute(command).await.unwrap();
         let stdout = output.stdout;
         let val = str::from_utf8(&stdout).unwrap();
         let right_val = r#"{"ID":"asset1","Color":"blue","Size":5,"Owner":"Tomoko","AppraisedValue":300,"docType":"asset"}
@@ -158,9 +164,9 @@ mod test {
     async fn check_get_all() {
         dotenv().ok();
         let mut exec = CliHandler::init(
-            &"/home/vlad/test_fabric/fabric-samples/bin".to_string(),
-            &"mychannel".to_string(),
-            &"basic".to_string(),
+            "/home/vlad/test_fabric/fabric-samples/bin".into(),
+            "mychannel".into(),
+            "basic".into(),
         );
         let assets = exec.get_all().await.unwrap();
         if assets.is_empty() {
