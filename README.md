@@ -76,5 +76,5 @@ Percentage of the requests served within a certain time (ms)
   99%   3289
  100%   7199 (longest request)
 ```
-####Скриншот htop, показывающий нагрузку на потоки при тестировании. 
-![Распределение нагрузки](/home/vlad/Pictures/Screenshots/Screenshot from 2020-08-18 19-01-03.png "Распределение нагрузки")
+#### Скриншот htop, показывающий нагрузку на потоки при тестировании. 
+![Распределение нагрузки](https://github.com/karnaukhovlad/test_siblink/blob/master/Screenshot%20from%202020-08-18%2019-01-03.png "Распределение нагрузки")
